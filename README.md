@@ -5,3 +5,6 @@ only_rain.R contains the analysis of the data.
 arpa.RData contains various result to note compute them each time.
 
 only_rain.html is a non commented brief overview of the main results.
+
+main.pdf is the thesis.
+
