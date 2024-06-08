@@ -3,6 +3,7 @@ library(copula)
 library(zoo)
 library(tseries) 
 library(forecast)
+library(VineCopula)
 
 #use stations with 20 years of data
 #setwd("/home/davide/università/tesi magistrale/dati/arpa/extreme value all_20") #set the working directory
@@ -73,6 +74,7 @@ clean_rain[,11]<-pobs(residuals(arima(clean_rain_xts[,11],c(2,0,2))))
 clean_rain[,16]<-pobs(residuals(arima(clean_rain_xts[,16],c(1,0,1))))
 
 
+#check if the pseudo-observations are uniformly distributed
 #for (i in colnames(clean_rain)){
 #hist(clean_rain[,i])
 # }
@@ -176,6 +178,8 @@ upper_clustering_diff_average<-hclust(d=as.dist(dissimilarity_diff_upper), metho
 upper_clustering_diff_complete <- hclust(d=as.dist(dissimilarity_diff_upper), method = "complete")
 
 plot(upper_clustering_diff_average, main="Average")
+abline(h=0.91, col="blue")
+
 plot(upper_clustering_diff_complete, main="Complete")
 abline(h=0.91, col="blue")
 
@@ -245,9 +249,7 @@ heatmaply_cor(corKendall(cluster15), xlab = "Stations",
               ylab = "Stations", dendrogram = "none", scale="none", main="cluster14")
 
 
-
 #================================
-#FIT DA AGGIORNARE....
 
 #COPULA FITTING ON CLUSTERS
 #AVERAGE CLUSTERS LOOK BETTER
@@ -260,12 +262,11 @@ t.copula_cluster11 <- tCopula(dim = dim(cluster11)[2], dispstr = "un", df.fixed 
 gofCopula(t.copula_cluster11, x=cluster11, N=N, simulation="mult")  
 
 #CLUSTER 12
-radSymTest(cluster12)$p.value #low p-value
+radSymTest(cluster12)$p.value
 exchTest(cluster12)$p.value 
+t.copula_cluster12 <- tCopula(dim = dim(cluster12)[2], dispstr = "un", df.fixed = TRUE)
+gofCopula(t.copula_cluster12, x=cluster12, N=N, simulation="mult")  
 
-fit_cluster12 <- fitCopula(gumbelCopula(dim = dim(cluster12)[2]),
-                           data = cluster12, method = "mpl")  
-gofCopula(fit_cluster12@copula, x = cluster12) 
 
 
 #CLUSTER 13
@@ -275,18 +276,21 @@ exchTest(cluster13)$p.value
 #FIT and GOF A t-COPULA
 t.copula_cluster13 <- tCopula(dim = dim(cluster13)[2], dispstr = "un", df.fixed = TRUE)
 gofCopula(t.copula_cluster13, x=cluster13, N=N, simulation="mult")  
-#very high p-value
 
 
 #CLUSTER 14
 radSymTest(cluster14)$p.value #low p-value
-exchTest(cluster14)$p.value #lowish p-value
-fit_cluster14 <- fitCopula(claytonCopula(dim = dim(cluster12)[2]),
-                                data = cluster14, method = "mpl")  
-gofCopula(fit_cluster14@copula, x=cluster14)  
+exchTest(cluster14)$p.value
+t.copula_cluster14 <- tCopula(dim = dim(cluster14)[2], dispstr = "un", df.fixed = TRUE)
+gofCopula(t.copula_cluster14, x=cluster14, N=N, simulation="mult")  
 
 
 #CLUSTER 15
+radSymTest(cluster15)$p.value 
+exchTest(cluster15)$p.value
+
+t.copula_cluster15 <- tCopula(dim = dim(cluster15)[2], dispstr = "un", df.fixed = TRUE)
+gofCopula(t.copula_cluster15, x=cluster15, N=N, simulation="mult")  
 
 
 #save(coordinates, clean_rain_xts, extreme_value_test_matrix, exchangeability_test_matrix, pairwise,
@@ -314,7 +318,7 @@ dissimilarity_diff_ken<- (2*(1-tau_matrix))^0.5
 #test different clustering methods
 #ken_clustering_log_average<-hclust(d=as.dist(dissimilarity_log_ken), method="average")
 #ken_clustering_log_complete <- hclust(d=as.dist(dissimilarity_log_ken), method = "complete")
-
+dev.off()
 ken_clustering_diff_average<-hclust(d=as.dist(dissimilarity_diff_ken), method="average")
 ken_clustering_diff_complete <- hclust(d=as.dist(dissimilarity_diff_ken), method = "complete")
 
