@@ -6,5 +6,7 @@ arpa.RData contains various result to note compute them each time.
 
 only_rain.html is a non commented brief overview of the main results.
 
+plots.R is the code used to create the plots in the thesis.
+
 main.pdf is the thesis.
 
