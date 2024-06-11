@@ -74,6 +74,7 @@ clean_rain[,11]<-pobs(residuals(arima(clean_rain_xts[,11],c(2,0,2))))
 clean_rain[,16]<-pobs(residuals(arima(clean_rain_xts[,16],c(1,0,1))))
 
 
+
 #check if the pseudo-observations are uniformly distributed
 #for (i in colnames(clean_rain)){
 #hist(clean_rain[,i])
@@ -253,20 +254,66 @@ heatmaply_cor(corKendall(cluster15), xlab = "Stations",
 
 #COPULA FITTING ON CLUSTERS
 #AVERAGE CLUSTERS LOOK BETTER
+
+#AIC test to select best fitting copula family
+set.seed(42)
+AIC_cop<-function(cluster){
+  cop_name <- c('clayton','frank','gumbel','normal','normal_un','t','t_un','joe')
+  cop <- c(claytonCopula(dim=dim(cluster)[2]),gumbelCopula(dim=dim(cluster)[2]), frankCopula(dim=dim(cluster)[2]),
+           normalCopula(dim=dim(cluster)[2]), normalCopula(dim=dim(cluster)[2], dispstr="un"), 
+           tCopula(dim = dim(cluster)[2], df.fixed=FALSE), tCopula(dim = dim(cluster)[2], dispstr="un", df.fixed=FALSE), 
+           joeCopula(dim=dim(cluster)[2]))
+  fit.copula <- list()
+  
+  for (i in 1:length(cop)){
+    tmp <- try(fitCopula(cop[[i]], cluster, method="mpl",optim.method ="BFGS"), silent=TRUE)
+    if (class(tmp)=="try-error"){
+      tmp <- try(fitCopula(cop[[i]], cluster, method="itau"), silent=TRUE)
+      cat(c("itau",i,"\n"))
+    }
+    fit.copula[[i]] <- tmp
+  }
+  #---- Summary of 3D copula model
+  fit.estimate <- vector()
+  fit.loglik      <- vector()
+  aic.result     <- vector()
+  for (i in 1:length(cop)){
+    fit.estimate[i] <- coef(fit.copula[[i]])[1]
+    fit.loglik[i]   <- fit.copula[[i]]@loglik
+    aic.result[i]   <- AIC(fit.copula[[i]])
+  }
+  #---- Best copula declaration 3D
+  WIN_AIC <- which.min(cbind(aic.result))
+  print(cop_name[WIN_AIC]);
+  fit.copula[[WIN_AIC]]
+}
+
 #CLUSTER 11
+#N<-240
 N<-1000
 radSymTest(cluster11)$p.value 
 exchTest(cluster11)$p.value
-
 t.copula_cluster11 <- tCopula(dim = dim(cluster11)[2], dispstr = "un", df.fixed = TRUE)
 gofCopula(t.copula_cluster11, x=cluster11, N=N, simulation="mult")  
+
+fit.normal <- fitCopula(normalCopula(dim = dim(cluster11)[2]),
+                         data = cluster11, method = "mpl")  
+normal <- fit.normal@copula # fitted copula
+gofCopula(normal, x = cluster11, N = N)  
+#prova altre copule
+AIC_cop(cluster11)
+
 
 #CLUSTER 12
 radSymTest(cluster12)$p.value
 exchTest(cluster12)$p.value 
-t.copula_cluster12 <- tCopula(dim = dim(cluster12)[2], dispstr = "un", df.fixed = TRUE)
+t_un.copula_cluster12 <- tCopula(dim = dim(cluster12)[2], dispstr = "un", df.fixed = TRUE)
+t.copula_cluster12 <- tCopula(dim = dim(cluster12)[2], df.fixed = TRUE)
+gofCopula(t_un.copula_cluster12, x=cluster12, N=N, simulation="mult")  
 gofCopula(t.copula_cluster12, x=cluster12, N=N, simulation="mult")  
 
+#prova altre copula
+AIC_cop(cluster12)
 
 
 #CLUSTER 13
@@ -274,8 +321,12 @@ radSymTest(cluster13)$p.value #lowish
 exchTest(cluster13)$p.value
 #both exchangeable and radially symmetric
 #FIT and GOF A t-COPULA
+cloud2(cluster13, xlab = (colnames(cluster13)[1]), ylab = (colnames(cluster13)[2]), zlab = (colnames(cluster13)[3])) #cloudplot
 t.copula_cluster13 <- tCopula(dim = dim(cluster13)[2], dispstr = "un", df.fixed = TRUE)
 gofCopula(t.copula_cluster13, x=cluster13, N=N, simulation="mult")  
+
+AIC_cop(cluster13)
+
 
 
 #CLUSTER 14
@@ -284,6 +335,13 @@ exchTest(cluster14)$p.value
 t.copula_cluster14 <- tCopula(dim = dim(cluster14)[2], dispstr = "un", df.fixed = TRUE)
 gofCopula(t.copula_cluster14, x=cluster14, N=N, simulation="mult")  
 
+#fit.normal <- fitCopula(normalCopula(dim = dim(cluster14)[2]),
+#                         data = cluster14, method = "mpl")  
+#normal <- fit.normal@copula # fitted copula
+#gofCopula(normal, x = cluster14, N = N)  
+
+AIC_cop(cluster14)
+
 
 #CLUSTER 15
 radSymTest(cluster15)$p.value 
@@ -291,6 +349,14 @@ exchTest(cluster15)$p.value
 
 t.copula_cluster15 <- tCopula(dim = dim(cluster15)[2], dispstr = "un", df.fixed = TRUE)
 gofCopula(t.copula_cluster15, x=cluster15, N=N, simulation="mult")  
+
+AIC_cop(cluster15)
+
+
+
+
+
+
 
 
 #save(coordinates, clean_rain_xts, extreme_value_test_matrix, exchangeability_test_matrix, pairwise,
