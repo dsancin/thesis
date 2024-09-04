@@ -1,4 +1,4 @@
-Mater thesis, titled "A copula approach to modeling environmental extreme events", for the data science and scientific computing course.
+Master thesis, titled "A copula approach to modeling environmental extreme events", for the data science and scientific computing course.
 
 
 The folder contains the csv with the data used, which consist of the maximum monthly rainfall in mm for the period 2004-2023 for various weather station in Friuli Venezia-Giulia, raw data downloaded from ARPA FVG - OSMER e GRN:  http://www.meteo.fvg.it/;.
