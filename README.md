@@ -7,8 +7,6 @@ only_rain.R contains the analysis of the data.
 
 only_rain.RData contains various object to avoid computing them each time.
 
-only_rain.html is a non commented overview of the main results (lot of high quality image, cannot be seen directly in github).
-
 plots.R is the code used to create the plots in the thesis.
 
 presentazione_lunga_finale.pdf are the slides used for the final presentation.
