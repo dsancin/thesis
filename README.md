@@ -11,5 +11,7 @@ only_rain.html is a non commented brief overview of the main results.
 
 plots.R is the code used to create the plots in the thesis.
 
+presentazione_lunga_finale.pdf are the slides used for the final presentation.
+
 main.pdf is the thesis.
 
